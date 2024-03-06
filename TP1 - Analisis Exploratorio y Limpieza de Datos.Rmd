@@ -1,6 +1,6 @@
 ---
-title: "Trabajo Practico"
-author: "NOMBRES Y APELLIDOS"
+title: "Primer Trabajo Practico - Análisis Exploratorio y Limpieza de Datos"
+author: "Alex Gabriel Cerutti"
 date: "23 de septiembre de 2022"
 output: html_document
 ---
@@ -9,12 +9,9 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Primer Trabajo Practico
-
 ## DataSet
 Game of Thrones (Juego de Tronos) es un exitoso programa de television de fantasia basado en la igualmente famosa serie de libros "A Song of Fire and Ice (Cancion de Hielo y Fuego)" de George RR Martin. El programa es conocido por su trama politica enormemente complicada, gran cantidad de personajes y sus frecuentes muertes de personajes.
-En este trabajo Practico analizaremos el archivo characterDeaths.csv que contiene los datos respecto a las muertes de los personajes de los diferentes libros, cabe aclarar que incluye aquellos personajes que aun se encuentran vivos.
-?Que ideas sobre el complicado panorama politico de este mundo de fantasia puedes encontrar en estos datos?
+En este trabajo Practico se analizará archivo characterDeaths.csv que contiene los datos respecto a las muertes de los personajes de los diferentes libros, cabe aclarar que incluye aquellos personajes que aun se encuentran vivos.
 
 ### **Variables**
 
@@ -39,7 +36,7 @@ En este trabajo Practico analizaremos el archivo characterDeaths.csv que contien
 Identifique el directorio de trabajo
 
 ```{r, echo=TRUE}
-
+getwd()
 ```
 
 
@@ -48,7 +45,7 @@ Identifique el directorio de trabajo
 Cargue el archivo characterDeaths.csv (el mismo se encuentra separado por , ) dentro de una variable llamda GOT 
 
 ```{r, echo=TRUE}
-
+GOT = read.csv('C:/characterDeaths.csv', header = TRUE, sep=",", na.strings = c(''))
 ```
 
 
@@ -57,9 +54,9 @@ Cargue el archivo characterDeaths.csv (el mismo se encuentra separado por , ) de
 De que clase es el objeto GOT?
 
 ```{r, echo=TRUE}
-
+class(GOT)
 ```
-
+Es de clase "data.frame"
 
 ## Ejercicio 4
 
@@ -71,9 +68,23 @@ c.	Nombre de cada variable del dataframe
 d.	Tipo de dato de cada variable del dataframe
 
 ```{r, echo=TRUE}
-
+str(GOT)
 ```
-
+Contiene 917 observaciones, y las siguientes 13 columnas con su tipo:
+(Nombre, tipo)
+Name, caracter
+Allegiances, caracter
+Death.Year, entero
+Book.of.Death, entero
+Death.Chapter, entero
+Book.Intro.Chapter, entero
+Gender, entero
+Nobility, entero
+GoT, entero
+CoK, entero
+SoS, entero
+FfC, entero
+DwD, entero
 
 ## Ejercicio 5
 
@@ -91,24 +102,33 @@ En caso que las siguientes columnas no sean del tipo factor, conviertalas
 Porque es recomendable que dichas variables sean factor?
 
 ```{r, echo=TRUE}
-
+GOT$Gender <- as.factor(GOT$Gender)
+GOT$Nobility <- as.factor(GOT$Nobility)
+GOT$GoT <- as.factor(GOT$GoT)
+GOT$CoK <- as.factor(GOT$CoK)
+GOT$SoS <- as.factor(GOT$SoS)
+GOT$FfC <- as.factor(GOT$FfC)
+GOT$DwD <- as.factor(GOT$DwD)
 ```
+Como todos eran enteros, se los convirtio a factor. Es recomendable utilizar factor ya que permite trabajar las variables como categoricas, pudiendo realizar por ejemplo una tabla de frecuencias para cada categoria
 
 ## Ejercicio 6
 
 Genere una nueva columna que indique si el personaje esta vivo o no.
 
 ```{r, echo=TRUE}
-
+GOT$Is.Alive[!is.na(GOT$Death.Year) | !is.na(GOT$Book.of.Death) | !is.na(GOT$Death.Chapter)] <- "No"
+GOT$Is.Alive[is.na(GOT$Death.Year) & is.na(GOT$Book.of.Death) & is.na(GOT$Death.Chapter)] <- "Yes"
 ```
-
+Se considera que un personaje esta vivo solo si en las 3 variables correspondientes a su muerte existen valores NA
 
 ## Ejercicio 7
 
 Genere dos nuevos data frame, uno con aquellos personajes vivos y otro con los personajes ya fallecidos.
 
 ```{r, echo=TRUE}
-
+Alive <- GOT[GOT$Is.Alive == "Yes",]
+Dead <- GOT[GOT$Is.Alive == "No",]
 ```
 
 
@@ -117,7 +137,7 @@ Genere dos nuevos data frame, uno con aquellos personajes vivos y otro con los p
 Genere una tabla de frecuencias identificando la cantidad de muertes por anio (no incluir personajes vivos)
 
 ```{r, echo=TRUE}
-
+table(as.factor(Dead$Death.Year))
 ```
 
 
@@ -128,7 +148,12 @@ Genere un grafico de torta en el que se muestren la cantidad de personajes muert
 *Nota*: Agregue al grafico un titulo apropiado
 
 ```{r, echo=TRUE}
-
+x <- table(as.factor(Dead$Gender))
+piepercent<- round(100*x/sum(x), 1)
+lbls <- c("Mujeres", "Hombres")
+lbls <- paste(lbls, piepercent)
+lbls <- paste(lbls,"%",sep="")
+pie(x, labels = lbls, main = "Muertes de personajes por genero")
 ```
 
 ## Ejercicio 10
@@ -137,7 +162,9 @@ Genere una tabla de contingencias en la que se muestren la cantidad de muertes p
 
 
 ```{r, echo=TRUE}
-
+tabla <- table(Dead$Death.Year, Dead$Gender)
+colnames(tabla) <- c("Mujer","Hombre")
+tabla
 ```
 
 
@@ -148,15 +175,20 @@ Realice un histograma de la variable Book.Intro.Chapter.
 + Agregue nombres a los ejes y al diagrama en general
 
 ```{r, echo=TRUE}
-
+hist(GOT$Book.Intro.Chapter, freq = F, main = "Primera apararicion de personajes por capitulo", 
+     xlab = "Capitulo", ylab = "Proporcion", nclass = 20)
 ```
 
 ## Ejercicio 12
 Indique si la variable Book.Intro.Chapter responde a distribucion normal. Realice un grafico cuantil cuantil
 
 ```{r, echo=TRUE}
-
+qqnorm(GOT$Book.Intro.Chapter)
+qqline(GOT$Book.Intro.Chapter)
+length(GOT$Book.Intro.Chapter)
+shapiro.test(GOT$Book.Intro.Chapter)
 ```
+En el grafico se puede observar que a pesar de que los valores centrales si parecen corresponder a una distribucion normal, al tener en cuenta al resto no. Luego de verificar que la cantidad de observaciones sea menor a 5000, se opto por realizar la prueba de Shapiro Wilk, la cual arrojo un resultado mucho menor a 0.05, por lo que se puede rechazar la hipotesis nula y afirmar que la distribucion no corresponda a una normal
 
 ## Ejercicio 13
 
@@ -164,8 +196,59 @@ Utilizando el data frame GOT identifique si hay valores NA y trabajelos de la ma
 
 
 ```{r, echo=TRUE}
+na_count <- sapply(GOT, function(y) sum(length(which(is.na(y)))))
+na_count <- data.frame(na_count)
+na_count
+```
+Se puede observar que hay 4 columnas que poseen valores NA, 3 de las cuales corresponden a la muerte de personajes. En un principio se afirmo de que si existen valores NA en la columna de Death.Year significa de que el personaje sigue vivo, por lo que se cambiaran estos valores NA por "Alive" en los casos donde estas 3 columnas sean NA simultaneamente. 
 
+```{r, echo=TRUE}
+GOT$Death.Year[is.na(GOT$Death.Year) & is.na(GOT$Book.of.Death) & is.na(GOT$Death.Chapter)] <- "Alive"
+GOT$Book.of.Death[GOT$Death.Year == "Alive" & is.na(GOT$Book.of.Death) & is.na(GOT$Death.Chapter)] <- "Alive"
+GOT$Death.Chapter[GOT$Death.Year == "Alive" & GOT$Book.of.Death == "Alive" & is.na(GOT$Death.Chapter)] <- "Alive"
+
+na_count <- sapply(GOT, function(y) sum(length(which(is.na(y)))))
+na_count <- data.frame(na_count)
+na_count
 ```
 
+En el caso de que solo una o 2 columnas sean NA, se interpreta que el personaje probablemente este muerto, por lo que se reemplazaran los NA por las modas correspondientes
+```{r, echo=TRUE}
+sort(table(as.factor(GOT$Death.Year)))
+sort(table(as.factor(GOT$Book.of.Death)))
+sort(table(as.factor(GOT$Death.Chapter)))
+```
+Siendo las modas para Death.Year, Book.of.Death, Death.Chapter, 299, 3 y 34 respectivamente (no se tienen en cuenta las modas correspondientes a cantidad de personajes vivos)
+
+```{r, echo=TRUE}
+GOT$Death.Year[is.na(GOT$Death.Year)] <- 299
+GOT$Book.of.Death[is.na(GOT$Book.of.Death)] <- 3
+GOT$Death.Chapter[is.na(GOT$Death.Chapter)] <- 34
+na_count <- sapply(GOT, function(y) sum(length(which(is.na(y)))))
+na_count <- data.frame(na_count)
+na_count
+```
+
+
+Ahora para los valores de Book.Intro.Chapter, se puede observar en el grafico del punto 11 que hay una moda en valores cercanos al 0, como se puede verificar en la siguiente tabla de frecuencias
+```{r, echo=TRUE}
+sort(table(as.factor(GOT$Book.Intro.Chapter)))
+```
+Donde el valor mas frecuente es el 0, debido a esto es que se procedera a reemplazar estos NA por el valor correspondiente a la moda que es 0
+```{r, echo=TRUE}
+GOT$Book.Intro.Chapter[is.na(GOT$Book.Intro.Chapter)] <- 0
+na_count <- sapply(GOT, function(y) sum(length(which(is.na(y)))))
+na_count <- data.frame(na_count)
+na_count
+```
 ##Ejercicio 14
 Identifique si los datos se encuentran ordenados. En caso que no lo esten ordenelos. Justifique su respuesta.
+```{r, echo=TRUE}
+GOT[1:20,]
+```
+Se puede observar que los datos se encuentran ordenados por el nombre. Sin embargo en algunos casos se nota que no se esta respetando el criterio de ordenamiento, por ejemplo en la fila 3 y 4 donde Adrack deberia estar antes que Aegon, por lo que se procedera a reordenar en base al nombre con el fin de facilitar las busquedas manuales en el dataframe
+```{r, echo=TRUE}
+library(dplyr)
+GOT <- arrange(GOT,Name)
+GOT[1:20,]
+```
