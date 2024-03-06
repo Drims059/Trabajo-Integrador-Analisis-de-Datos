@@ -1,0 +1,171 @@
+---
+title: "Trabajo Practico"
+author: "NOMBRES Y APELLIDOS"
+date: "23 de septiembre de 2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Primer Trabajo Practico
+
+## DataSet
+Game of Thrones (Juego de Tronos) es un exitoso programa de television de fantasia basado en la igualmente famosa serie de libros "A Song of Fire and Ice (Cancion de Hielo y Fuego)" de George RR Martin. El programa es conocido por su trama politica enormemente complicada, gran cantidad de personajes y sus frecuentes muertes de personajes.
+En este trabajo Practico analizaremos el archivo characterDeaths.csv que contiene los datos respecto a las muertes de los personajes de los diferentes libros, cabe aclarar que incluye aquellos personajes que aun se encuentran vivos.
+?Que ideas sobre el complicado panorama politico de este mundo de fantasia puedes encontrar en estos datos?
+
+### **Variables**
+
++ **Name**              : Nombre del personaje
++ **Allegiances**       : Casa a la que se encuentra aliado el personaje
++ **Death.Year**        : Anio de fallecimmiento (en caso que no contenga datos, indica que el personaje está vivo)
++ **Book.of.Death**     : Libro en el que fallecio
++ **Death.Chapter**     : Capitulo del libro en el que fallecio
++ **Book.Intro.Chapter**: Capitulo del libro en el que aparece por primera vez
++ **Gender**            : Genero del personaje (0-Femenino ; 1-Masculino)
++ **Nobility**          : Indica si pertenece a familia noble (1) o no(0)
++ **GoT**               : Indica si el personaje aparece o no en el libro 1 (*Game of Thrones*)
++ **CoK**               : Indica si el personaje aparece o no en el libro 2 (*Clash of Kings*)
++ **SoS**               : Indica si el personaje aparece o no en el libro 3 (*Storm of Swords*)
++ **FfC**               : Indica si el personaje aparece o no en el libro 4 (*Feast of Crows*)
++ **DwD**               : Indica si el personaje aparece o no en el libro 5 (*Dance with Dragons*)
+
+
+
+## Ejercicio 1
+
+Identifique el directorio de trabajo
+
+```{r, echo=TRUE}
+
+```
+
+
+## Ejercicio 2
+
+Cargue el archivo characterDeaths.csv (el mismo se encuentra separado por , ) dentro de una variable llamda GOT 
+
+```{r, echo=TRUE}
+
+```
+
+
+## Ejercicio 3
+
+De que clase es el objeto GOT?
+
+```{r, echo=TRUE}
+
+```
+
+
+## Ejercicio 4
+
+Obtenga la estructura global del objeto con un solo comando e indique
+
+a.	Cantidad de observaciones
+b.	Cantidad de columnas (o variables)
+c.	Nombre de cada variable del dataframe
+d.	Tipo de dato de cada variable del dataframe
+
+```{r, echo=TRUE}
+
+```
+
+
+## Ejercicio 5
+
+
+En caso que las siguientes columnas no sean del tipo factor, conviertalas
+
++ Gender           
++ Nobility         
++ GoT           
++ CoK         
++ SoS         
++ FfC         
++ DwD  
+
+Porque es recomendable que dichas variables sean factor?
+
+```{r, echo=TRUE}
+
+```
+
+## Ejercicio 6
+
+Genere una nueva columna que indique si el personaje esta vivo o no.
+
+```{r, echo=TRUE}
+
+```
+
+
+## Ejercicio 7
+
+Genere dos nuevos data frame, uno con aquellos personajes vivos y otro con los personajes ya fallecidos.
+
+```{r, echo=TRUE}
+
+```
+
+
+## Ejercicio 8
+
+Genere una tabla de frecuencias identificando la cantidad de muertes por anio (no incluir personajes vivos)
+
+```{r, echo=TRUE}
+
+```
+
+
+## Ejercicio 9
+
+Genere un grafico de torta en el que se muestren la cantidad de personajes muertos por genero. Que observa?
+
+*Nota*: Agregue al grafico un titulo apropiado
+
+```{r, echo=TRUE}
+
+```
+
+## Ejercicio 10
+
+Genere una tabla de contingencias en la que se muestren la cantidad de muertes por anio y genero.
+
+
+```{r, echo=TRUE}
+
+```
+
+
+## Ejercicio 11
+Realice un histograma de la variable Book.Intro.Chapter. 
+
++ Trabaje con frecuencias relativas y clases. 
++ Agregue nombres a los ejes y al diagrama en general
+
+```{r, echo=TRUE}
+
+```
+
+## Ejercicio 12
+Indique si la variable Book.Intro.Chapter responde a distribucion normal. Realice un grafico cuantil cuantil
+
+```{r, echo=TRUE}
+
+```
+
+## Ejercicio 13
+
+Utilizando el data frame GOT identifique si hay valores NA y trabajelos de la manera mas conveniente en caso que corresponda. Justifique cada criterio
+
+
+```{r, echo=TRUE}
+
+```
+
+##Ejercicio 14
+Identifique si los datos se encuentran ordenados. En caso que no lo esten ordenelos. Justifique su respuesta.

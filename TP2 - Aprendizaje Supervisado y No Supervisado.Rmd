@@ -1,0 +1,196 @@
+---
+title: "Segundo Trabajo Practico - Aprendizaje Supervisado y No Supervisado"
+author: "Alex Gabriel Cerutti 78708"
+date: "4 de noviembre de 2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+## DataSet
+Game of Thrones (Juego de Tronos) es un exitoso programa de television de fantasia basado en la igualmente famosa serie de libros "A Song of Fire and Ice (Canción de Hielo y Fuego)" de George RR Martin. El programa es conocido por su trama politica enormemente complicada, gran cantidad de personajes y sus frecuentes muertes de personajes.
+En este trabajo Práctico se analizará archivo characterDeaths.csv que contiene los datos respecto a las muertes de los personajes de los diferentes libros, cabe aclarar que incluye aquellos personajes que aun se encuentran vivos.
+
+### **Variables**
+
++ **Name**              : Nombre del personaje
++ **Allegiances**       : Casa a la que se encuentra aliado el personaje
++ **Death.Year**        : Anio de fallecimmiento (en caso que no contenga datos, indica que el personaje está vivo)
++ **Book.of.Death**     : Libro en el que fallecio
++ **Death.Chapter**     : Capitulo del libro en el que fallecio
++ **Book.Intro.Chapter**: Capitulo del libro en el que aparece por primera vez
++ **Gender**            : Genero del personaje (0-Femenino ; 1-Masculino)
++ **Nobility**          : Indica si pertenece a familia noble (1) o no(0)
++ **GoT**               : Indica si el personaje aparece o no en el libro 1 (*Game of Thrones*)
++ **CoK**               : Indica si el personaje aparece o no en el libro 2 (*Clash of Kings*)
++ **SoS**               : Indica si el personaje aparece o no en el libro 3 (*Storm of Swords*)
++ **FfC**               : Indica si el personaje aparece o no en el libro 4 (*Feast of Crows*)
++ **DwD**               : Indica si el personaje aparece o no en el libro 5 (*Dance with Dragons*)
+
+
+## Ejercicio N 1
+
+Cargar el dataset denominado characterDeaths2. NOTA: Los datos se encuentran separados por ;
+
+```{r , echo = TRUE}
+wd = getwd()
+cd2 = read.csv('C:/characterDeaths2.csv', header = TRUE, sep=";", na.strings = c(''))
+```
+
+
+## Ejercicio N 2
+Realizar una limpieza de datos en caso de que corresponda. Justifique su accion
+
+```{r , echo = TRUE}
+na_count <- sapply(cd2, function(y) sum(length(which(is.na(y)))))
+na_count <- data.frame(na_count)
+na_count
+```
+Se puede observar que existen 3 columnas con valores NA, siguiendo el criterio del anterior trabajo practico (si las columnas de Death.Year, Book.of.Death y Death.Year son NA simultaneamente, se interpreta que el personaje esta vivo), se procederá a realizar la limpieza
+
+```{r, echo=TRUE}
+cd2$Death.Year[is.na(cd2$Death.Year) & is.na(cd2$Book.of.Death) & is.na(cd2$Death.Chapter)] <- "Alive"
+cd2$Book.of.Death[cd2$Death.Year == "Alive" & is.na(cd2$Book.of.Death) & is.na(cd2$Death.Chapter)] <- "Alive"
+cd2$Death.Chapter[cd2$Death.Year == "Alive" & cd2$Book.of.Death == "Alive" & is.na(cd2$Death.Chapter)] <- "Alive"
+
+na_count <- sapply(cd2, function(y) sum(length(which(is.na(y)))))
+na_count <- data.frame(na_count)
+na_count
+```
+Los datos ahora estan limpios
+
+## Ejercicio 3
+
+Genere una nueva columna que indique si el personaje esta vivo (1) o no (0). En caso que la nueva columna no sea de tipo factor, conviertala
+
+```{r, echo=TRUE}
+cd2$Is.Alive[cd2$Death.Year=="Alive" | cd2$Book.of.Death=="Alive" | cd2$Death.Chapter=="Alive"] <- 1.0
+cd2$Is.Alive[cd2$Death.Year!="Alive" & cd2$Book.of.Death!="Alive" & cd2$Death.Chapter!="Alive"] <- 0
+str(cd2)
+```
+Como la columna se genero como un tipo numeric, se convertira a factor
+```{r, echo=TRUE}
+cd2$Is.Alive <- as.factor(cd2$Is.Alive)
+str(cd2)
+```
+
+## Ejercicio N 4
+Considerando que la variable a predecir es la creada en el punto anterior, responda:
+
+a.	?Puede utilizar regresion logistica para predecir dicha variable? Justifique su respuesta.
+
+b.	En caso de respuesta afirmativa al punto a:
+
++.  Cuales considera variables independendientes o predictoras? Porque?
+
++.	Aplique el metodo. 
+
++.	Pruebe el modelo obtenido, indicando el porcentaje de error
+
+a) Se puede utilizar dicha variable a ser una variable categorica, o sea que tiene valores determinados posibles
+
+b) En este caso se puede explicar mas facil especificando cuales variables NO seran consideradas predictoras (o al menos no se deberian tener en cuenta), estas son Death.Year, Book.of.Death, Book.Intro.Chapter y Name. En el caso de las primeras 3 estas no se deberian tomar en cuenta (mas alla de que sean del tipo chr, estas se pueden convertir en factor) ya que indican directamente cual sera el resultado, si poseen algun valor ya se da por sentado que el resultado es 0, o sea muerto, por lo tanto la prediccion no tendria demasiado sentido. Por otro lado Name no puede ser tomado en cuenta al ser una variable del tipo chr, y no tiene tampoco mucho sentido convertirla a factor al no poseer valores repetidos. Por lo que el resto de variables que no sean las 4 mencionadas se tomaran como variables independientes, aunque por supuesto tampoco se tomara a Is.Alive ya que esta es la variable dependiente la cual se busca predecir (por lo que no es predictora)
+
+
+
+```{r , echo = TRUE}
+cd3 <- cd2[,!names(cd2) %in% c("Name","Death.Year","Book.of.Death","Death.Chapter")]
+library(caTools)
+set.seed(1000)
+split = sample.split(cd3$Is.Alive,SplitRatio = 0.65) #tomo 65% de los datos para training dataset
+train = subset(cd3,split==TRUE)
+test = subset(cd3,split==FALSE)
+model = glm(Is.Alive ~ . ,data = train,family = binomial)
+summary(model)
+
+
+predictTest = predict(model, type = "response",newdata = test)
+predictTest <- ifelse(predictTest > 0.5,1,0)
+ErrorClasif <- mean(predictTest != test$Is.Alive)
+ErrorClasif
+print(paste('Accuracy',1-ErrorClasif))
+print(paste('Accuracy',mean(predictTest == test$Is.Alive)))
+```
+Se puede observar que el porcentaje de precision es de 68,84%, por lo que el porcentaje de error es del 31,15%
+
+## Ejercicio N 5
+Indique si Daenerys Targaryen vivira o morira en los siguientes libros, basandose en su prediccion
+
+```{r , echo = TRUE}
+characterTest <- cd2[cd2$Name == "Daenerys Targaryen",]
+characterTest <- characterTest[,!names(cd2) %in% c("Name","Death.Year","Book.of.Death","Death.Chapter")]
+characterPredictTest = predict(model, type = "response",newdata = characterTest)
+characterPredictTest
+ifelse(characterPredictTest > 0.5,"Vivira","Morira")
+```
+La prediccion para este personaje indica que vivira en los siguientes libros, con una probabilidad del 74,69%
+
+## Ejercicio N 6
+Generar un arbol de decision con ctree. Grafique el arbol generado. Luego, probar el modelo, indicando el error encontrado.
+
+```{r , echo = TRUE}
+library(party)
+set.seed(1000)
+split <- sample.split(cd3$Is.Alive,SplitRatio = 0.65) #tomo 65% de los datos para training dataset
+train <- subset(cd3,split==TRUE)
+test <- subset(cd3,split==FALSE)
+modelC <- ctree(Is.Alive ~ . ,data = train)
+summary(modelC)
+print(modelC)
+plot(modelC)
+predictTest <- predict(modelC, newdata = test)
+table(predictTest, test$Is.Alive) 
+```
+Probando con los datos del test se obtiene la siguiente la tabla
+```{r , echo = TRUE}
+predictTest <- predict(modelC, newdata = test)
+table(predictTest, test$Is.Alive) 
+```
+La tabla muestra que hay 111 desaciertos, sobre un total de 321 predicciones, dividiendo estos valores se obtiene que el error de prediccion es del 34,57%
+
+## Ejercicio N 7
+
+Aplique la funcion randomforest. Probar el modelo, indicando el error encontrado.
+
+
+```{r , echo = TRUE}
+library(randomForest)
+set.seed(1000)
+split <- sample.split(cd3$Is.Alive,SplitRatio = 0.65) #tomo 65% de los datos para training dataset
+train <- subset(cd3,split==TRUE)
+test <- subset(cd3,split==FALSE)
+modelF <- randomForest(Is.Alive ~ . ,data = train, ntree = 100, proximity=TRUE)
+summary(modelF)
+
+print(modelF)
+
+predictTest <- predict(modelF, newdata = test)
+table(predictTest, test$Is.Alive) 
+```
+Se puede ver que existe un error de clasificacion del 64% para los personajes muertos, y un error del 15,9% para los personajes vivos
+
+Y probando el modelo con los datos de test, se obtiene la siguiente tabla
+```{r , echo = TRUE}
+predictTest <- predict(modelF, newdata = test)
+table(predictTest, test$Is.Alive) 
+```
+Que dividiendo los desaciertos (86) con el total de predicciones (321) se obtiene un error de prediccion del 26,79% 
+
+## Ejercicio N 8
+Aplicar algun algoritmo de clustering que determine automaticamente la cantidad de grupos a clusters. ?Cuantos grupos se detectaron?
+
+Para este proposito se puede utilizar pamK
+```{r , echo = TRUE}
+library(fpc)
+cd4 <- cd3
+cd4$Is.Alive <- NULL
+pamk.result <- pamk(cd4)
+pamk.result$nc
+table(pamk.result$pamobject$clustering)
+
+```
+En donde se detectaron que existen 2 grupos
+
